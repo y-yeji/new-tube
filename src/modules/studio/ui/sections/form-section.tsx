@@ -17,7 +17,6 @@ import {
   LockIcon,
   MoreVerticalIcon,
   RotateCcwIcon,
-  SparkleIcon,
   SparklesIcon,
   TrashIcon,
 } from "lucide-react";
@@ -53,6 +52,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { THUMBNAIL_FALLBACK } from "@/modules/videos/constants";
 import { ThumbnailUploadModal } from "../components/Thumbnail-upload-modal";
+import { ThumbnailGenerateModal } from "../components/Thumbnail-generate-modal";
 
 interface FormSectionProps {
   videoId: string;
@@ -129,7 +129,9 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
   const router = useRouter();
   const utils = trpc.useUtils();
 
-  const [thumbnailModalOpen, setThumbnailUploadModal] = useState(false);
+  const [thumbnailModalOpen, setThumbnailModalOpen] = useState(false);
+  const [thumbnailGenerateModalOpen, setThumbnailGenerateModalOpen] =
+    useState(false);
 
   const [video] = trpc.studio.getOne.useSuspenseQuery({ id: videoId });
   const [categories] = trpc.categories.getMany.useSuspenseQuery();
@@ -178,17 +180,6 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
     },
   });
 
-  const generateThumbnail = trpc.videos.generateThumbnail.useMutation({
-    onSuccess: () => {
-      toast.success("Background job started", {
-        description: "This may take some time",
-      });
-    },
-    onError: () => {
-      toast.error("Somthing wnet wrong");
-    },
-  });
-
   const restoreThumbnail = trpc.videos.restoreThumbnail.useMutation({
     onSuccess: () => {
       utils.studio.getMany.invalidate();
@@ -224,10 +215,16 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
   };
   return (
     <>
+      {/* ThumbnailGenerateModal */}
+      <ThumbnailGenerateModal
+        open={thumbnailGenerateModalOpen}
+        onOpenChange={setThumbnailGenerateModalOpen}
+        videoId={videoId}
+      />
       {/* ThumbnailUploadModal */}
       <ThumbnailUploadModal
         open={thumbnailModalOpen}
-        onOpenChange={setThumbnailUploadModal}
+        onOpenChange={setThumbnailModalOpen}
         videoId={videoId}
       />
       {/* Form */}
@@ -369,14 +366,14 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="start" side="right">
                             <DropdownMenuItem
-                              onClick={() => setThumbnailUploadModal(true)}
+                              onClick={() => setThumbnailModalOpen(true)}
                             >
                               <ImagePlusIcon className="size-4 mr-1" />
                               Change
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
-                                generateThumbnail.mutate({ id: videoId })
+                                setThumbnailGenerateModalOpen(true)
                               }
                             >
                               <SparklesIcon className="size-4 mr-1" />
@@ -494,26 +491,27 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                 name="visibility"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>visibility</FormLabel>
+                    <FormLabel>Visibility</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value ?? undefined}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a visibility" />
+                          <SelectValue placeholder="Select visibility" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="public">
                           <div className="flex items-center">
-                            <Globe2Icon className="size-4 mr-2" /> public
+                            <Globe2Icon className="size-4 mr-2" />
+                            Public
                           </div>
                         </SelectItem>
                         <SelectItem value="private">
                           <div className="flex items-center">
                             <LockIcon className="size-4 mr-2" />
-                            private
+                            Private
                           </div>
                         </SelectItem>
                       </SelectContent>
