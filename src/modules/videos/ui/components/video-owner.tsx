@@ -7,7 +7,7 @@ import { SubscriptionButton } from "@/modules/subscriptions/ui/components/subscr
 import { UserInfo } from "@/modules/users/ui/components/user-info";
 
 interface VideoOwnerProps {
-  user: VideoGetOneOutput["users"];
+  user: VideoGetOneOutput["user"];
   videoId: string;
 }
 export const VideoOwner = ({ user, videoId }: VideoOwnerProps) => {
