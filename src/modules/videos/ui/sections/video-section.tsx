@@ -25,6 +25,7 @@ export const VideoSection = ({ videoId }: VideoSectionProps) => {
 const VideoSectionSuspense = ({ videoId }: VideoSectionProps) => {
   const { isSignedIn } = useAuth();
   const [video] = trpc.videos.getOne.useSuspenseQuery({ id: videoId });
+  const utils = trpc.useUtils();
   const createView = trpc.videoViews.create.useMutation({
     onSuccess: () => {
       utils.videos.getOne.invalidate({ id: videoId });
